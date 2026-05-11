@@ -27,7 +27,6 @@ const containerVariants: Variants = {
 
 export default function BlogPage() {
     const {
-        fetchPosts,
         posts,
         isLoading,
         pagination,
@@ -42,8 +41,8 @@ export default function BlogPage() {
     const [showFeatured, setShowFeatured] = useState<boolean>(false);
 
     useEffect(() => {
-        fetchPosts();
-    }, [fetchPosts]);
+        setFilter({ featured: undefined });
+    }, [setFilter]);
 
     // Get all unique tags
     const allTags = useMemo(() => {
