@@ -8,16 +8,27 @@ import { prisma } from "@/lib/db/prisma";
 import { requireAuth } from "@/lib/auth/session";
 import { UpdateProjectSchema } from "@/lib/validations";
 import {
-  ok, noContent, notFound, conflict, serverError, validationError,
+  ok,
+  noContent,
+  notFound,
+  conflict,
+  serverError,
+  validationError,
 } from "@/lib/api-response";
 
-type Params = { params: { slug: string } };
+// Remove the old Params type
+// type Params = { params: { slug: string } };
 
 // ── GET /api/projects/:slug ───────────────────────────────────────────────────
-export async function GET(_req: NextRequest, { params }: Params) {
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ slug: string }> },
+) {
   try {
+    const { slug } = await params;
+
     const project = await prisma.project.findUnique({
-      where: { slug: params.slug, published: true },
+      where: { slug },
     });
     if (!project) return notFound("Project");
     return ok(project);
@@ -27,11 +38,15 @@ export async function GET(_req: NextRequest, { params }: Params) {
 }
 
 // ── PATCH /api/projects/:slug ─────────────────────────────────────────────────
-export async function PATCH(req: NextRequest, { params }: Params) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ slug: string }> },
+) {
   const auth = await requireAuth(req);
   if (auth instanceof Response) return auth;
 
   try {
+    const { slug } = await params;
     const body = await req.json();
     const parsed = UpdateProjectSchema.safeParse(body);
     if (!parsed.success) return validationError(parsed.error);
@@ -39,13 +54,14 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     // Slug uniqueness check (only when slug is being changed)
     if (parsed.data.slug) {
       const collision = await prisma.project.findFirst({
-        where: { slug: parsed.data.slug, NOT: { slug: params.slug } },
+        where: { slug: parsed.data.slug, NOT: { slug } },
       });
-      if (collision) return conflict(`Slug "${parsed.data.slug}" is already in use`);
+      if (collision)
+        return conflict(`Slug "${parsed.data.slug}" is already in use`);
     }
 
     const project = await prisma.project.update({
-      where: { slug: params.slug },
+      where: { slug },
       data: parsed.data,
     });
     return ok(project);
@@ -56,12 +72,17 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 }
 
 // ── DELETE /api/projects/:slug ────────────────────────────────────────────────
-export async function DELETE(req: NextRequest, { params }: Params) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ slug: string }> },
+) {
   const auth = await requireAuth(req);
   if (auth instanceof Response) return auth;
 
   try {
-    await prisma.project.delete({ where: { slug: params.slug } });
+    const { slug } = await params;
+
+    await prisma.project.delete({ where: { slug } });
     return noContent();
   } catch (e: any) {
     if (e?.code === "P2025") return notFound("Project");

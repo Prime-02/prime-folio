@@ -22,11 +22,22 @@ export async function getSession(req: NextRequest): Promise<AuthResult> {
 
 // Convenience wrapper — returns 401 response when unauthenticated
 export async function requireAuth(
-  req: NextRequest
+  req: NextRequest,
 ): Promise<{ user: TokenPayload } | Response> {
   const result = await getSession(req);
   if (!result.ok) {
     return Response.json({ error: result.error }, { status: 401 });
+  }
+  return { user: result.user };
+}
+
+// Optional auth — returns user if authenticated, null if not, never throws
+export async function getOptionalAuth(
+  req: NextRequest,
+): Promise<{ user: TokenPayload } | null> {
+  const result = await getSession(req);
+  if (!result.ok) {
+    return null;
   }
   return { user: result.user };
 }

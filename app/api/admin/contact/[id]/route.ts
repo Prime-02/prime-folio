@@ -7,12 +7,20 @@ import { prisma } from "@/lib/db/prisma";
 import { requireAuth } from "@/lib/auth/session";
 import { UpdateContactStatusSchema } from "@/lib/validations";
 import {
-  ok, noContent, notFound, serverError, validationError,
+  ok,
+  noContent,
+  notFound,
+  serverError,
+  validationError,
 } from "@/lib/api-response";
 
-type Params = { params: { id: string } };
+// Remove the old Params type
+// type Params = { params: { id: string } };
 
-export async function PATCH(req: NextRequest, { params }: Params) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const auth = await requireAuth(req);
   if (auth instanceof Response) return auth;
 
@@ -21,8 +29,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     const parsed = UpdateContactStatusSchema.safeParse(body);
     if (!parsed.success) return validationError(parsed.error);
 
+    // Await params before accessing its properties
+    const { id } = await params;
+
     const msg = await prisma.contactMessage.update({
-      where: { id: params.id },
+      where: { id },
       data: { status: parsed.data.status },
     });
     return ok(msg);
@@ -32,12 +43,18 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: Params) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const auth = await requireAuth(req);
   if (auth instanceof Response) return auth;
 
   try {
-    await prisma.contactMessage.delete({ where: { id: params.id } });
+    // Await params before accessing its properties
+    const { id } = await params;
+
+    await prisma.contactMessage.delete({ where: { id } });
     return noContent();
   } catch (e: any) {
     if (e?.code === "P2025") return notFound("Message");

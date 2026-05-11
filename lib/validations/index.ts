@@ -20,15 +20,19 @@ export const CreateProjectSchema = z.object({
 
 export const UpdateProjectSchema = CreateProjectSchema.partial();
 
-// ── Blog Post ─────────────────────────────────────────────────────────────────
 export const CreatePostSchema = z.object({
-  title:       z.string().min(1).max(160),
-  slug:        z.string().min(1).max(160).regex(/^[a-z0-9-]+$/, "Slug must match the MDX filename"),
-  summary:     z.string().min(1).max(400),
-  coverImage:  z.string().optional(),
-  tags:        z.array(z.string()).default([]),
-  published:   z.boolean().default(false),
-  featured:    z.boolean().default(false),
+  title: z.string().min(1).max(160),
+  slug: z
+    .string()
+    .min(1)
+    .max(160)
+    .regex(/^[a-z0-9-]+$/),
+  summary: z.string().min(1).max(400),
+  content: z.string().min(1), // <-- add this
+  coverImage: z.string().optional(),
+  tags: z.array(z.string()).default([]),
+  published: z.boolean().default(false),
+  featured: z.boolean().default(false),
   publishedAt: z.string().datetime().optional(),
 });
 
