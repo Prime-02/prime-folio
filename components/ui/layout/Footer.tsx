@@ -95,7 +95,7 @@ export default function Footer( ) {
                             className="text-xl font-Montserrat font-bold mb-4 block"
                             style={{ color: "var(--text-primary)" }}
                         >
-                            CD<span style={{ color: "var(--primary-500)" }}>.</span>
+                            {`PR1M3-FOLIO`}<span style={{ color: "var(--primary-500)" }}>.</span>
                         </Link>
                         <p
                             className="text-sm leading-relaxed mb-6"
