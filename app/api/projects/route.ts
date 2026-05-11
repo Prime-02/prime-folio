@@ -15,7 +15,6 @@ import {
   serverError,
   validationError,
   unauthorized,
-  badRequest,
 } from "@/lib/api-response";
 
 // ── GET /api/projects ─────────────────────────────────────────────────────────

@@ -318,15 +318,14 @@ export const selectFeaturedProjects = (s: ProjectState) => {
   if (!Array.isArray(s.projects)) return [];
   return s.projects.filter((p) => p.featured);
 };
-
-export const selectAllTags = (s: ProjectState) => {
-  if (!Array.isArray(s.projects)) return [];
-  return [...new Set(s.projects.flatMap((p) => p.tags))].sort();
-};
-
 export const selectPagination = (s: ProjectState) => s.pagination;
 
 export const selectIsFirstPage = (s: ProjectState) =>
   !s.pagination?.hasPreviousPage;
 
 export const selectIsLastPage = (s: ProjectState) => !s.pagination?.hasNextPage;
+
+export const selectAllTags = (s: ProjectState) => {
+  if (!Array.isArray(s.projects)) return [];
+  return [...new Set(s.projects.flatMap((p) => p.tags || []))].sort();
+};

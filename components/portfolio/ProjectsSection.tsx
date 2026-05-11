@@ -40,22 +40,9 @@ export default function ProjectsSection() {
     }, [setFilter]);
 
 
-    // Get published projects, sorted by featured first, then order, then date
-    const publishedProjects = useMemo(() => {
-        return [...projects]
-            .filter((p) => p.published)
-            .sort((a, b) => {
-                // Then by order
-                if (a.order !== b.order) return a.order - b.order;
-
-                // Then by date (newest first)
-                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-            });
-    }, [projects]);
-
     if (isLoading) return <ProjectsSkeleton />;
 
-    const hasMoreProjects = publishedProjects.length > 3;
+    const hasMoreProjects = projects.length > 3;
 
     return (
         <motion.section
@@ -119,7 +106,7 @@ export default function ProjectsSection() {
                 </motion.div>
 
                 {/* Project grid */}
-                <ProjectGrid projects={publishedProjects} showAll={false} />
+                <ProjectGrid projects={projects} showAll={false} />
 
                 {/* Bottom "See All" button for mobile */}
                 {hasMoreProjects && (

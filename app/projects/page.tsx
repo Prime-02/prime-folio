@@ -2,7 +2,7 @@
 "use client";
 
 import { useProjectStore } from "@/lib/stores";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { motion, type Variants } from "framer-motion";
 import Link from "next/link";
 import { ProjectsSkeleton } from "@/components/portfolio/projects-components";
@@ -30,24 +30,17 @@ export default function ProjectsPage() {
         projects,
         isLoading,
         pagination,
+        filters,
         nextPage,
         previousPage,
         goToPage,
         setFilter,
-        clearFilters: clearStoreFilters
+        clearFilters,
     } = useProjectStore();
 
-    const [activeTag, setActiveTag] = useState<string | null>(null);
-    const [showFeatured, setShowFeatured] = useState<boolean>(false);
-
-    useEffect(() => {
-        setFilter({ featured: undefined });
-    }, [setFilter]);
-
-    // Get all unique tags - safely handle if projects is not an array
+    // Compute tags locally with useMemo
     const allTags = useMemo(() => {
         if (!Array.isArray(projects)) return [];
-
         const tags = new Set<string>();
         projects.forEach((p) => {
             if (p?.tags && Array.isArray(p.tags)) {
@@ -57,37 +50,26 @@ export default function ProjectsPage() {
         return Array.from(tags).sort();
     }, [projects]);
 
-    // Ensure projects is always an array
-    const safeProjects = useMemo(() => {
-        return Array.isArray(projects) ? projects : [];
-    }, [projects]);
+    useEffect(() => {
+        clearFilters()
+    }, [])
 
-    // Filter handlers - update store filters and refetch
-    const handleShowAll = () => {
-        setActiveTag(null);
-        setShowFeatured(false);
-        setFilter({ tag: null, featured: null });
-    };
+    // Read current filter state directly from store
+    const activeTag = filters.tag;
+    const showFeatured = filters.featured === true;
+
+    // Filter handlers - these will trigger fetch via setFilter/clearFilters
+    const handleShowAll = () => clearFilters();
 
     const handleToggleFeatured = () => {
-        const newFeatured = !showFeatured;
-        setShowFeatured(newFeatured);
-        setActiveTag(null);
-        setFilter({ featured: newFeatured ? true : null, tag: null });
+        setFilter({ featured: !showFeatured ? true : null, tag: null });
     };
 
     const handleToggleTag = (tag: string) => {
-        const newTag = activeTag === tag ? null : tag;
-        setActiveTag(newTag);
-        setShowFeatured(false);
-        setFilter({ tag: newTag, featured: null });
+        setFilter({ tag: activeTag === tag ? null : tag, featured: null });
     };
 
-    const handleClearFilters = () => {
-        setActiveTag(null);
-        setShowFeatured(false);
-        clearStoreFilters();
-    };
+    const handleClearFilters = () => clearFilters();
 
     // Generate page numbers for pagination
     const getPageNumbers = () => {
@@ -95,31 +77,25 @@ export default function ProjectsPage() {
 
         const { page, totalPages } = pagination;
         const pages: (number | string)[] = [];
-        const delta = 2; // Number of pages to show on each side of current page
+        const delta = 2;
 
-        // Always show first page
         pages.push(1);
 
-        // Calculate range
         const rangeStart = Math.max(2, page - delta);
         const rangeEnd = Math.min(totalPages - 1, page + delta);
 
-        // Add ellipsis after first page if needed
         if (rangeStart > 2) {
             pages.push('...');
         }
 
-        // Add pages in range
         for (let i = rangeStart; i <= rangeEnd; i++) {
             pages.push(i);
         }
 
-        // Add ellipsis before last page if needed
         if (rangeEnd < totalPages - 1) {
             pages.push('...');
         }
 
-        // Always show last page if there's more than 1 page
         if (totalPages > 1) {
             pages.push(totalPages);
         }
@@ -127,7 +103,7 @@ export default function ProjectsPage() {
         return pages;
     };
 
-    if (isLoading && safeProjects.length === 0) return <ProjectsSkeleton />;
+    if (isLoading && projects.length === 0) return <ProjectsSkeleton />;
 
     const filterKey = activeTag ?? (showFeatured ? "featured" : "all");
 
@@ -154,9 +130,9 @@ export default function ProjectsPage() {
             </div>
 
             {/* Projects Grid or Empty State */}
-            {safeProjects.length > 0 ? (
+            {projects.length > 0 ? (
                 <>
-                    <ProjectsGrid projects={safeProjects} filterKey={filterKey} />
+                    <ProjectsGrid projects={projects} filterKey={filterKey} />
 
                     {/* Pagination Controls */}
                     {pagination && pagination.totalPages > 1 && (
