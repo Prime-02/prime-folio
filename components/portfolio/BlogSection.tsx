@@ -33,21 +33,17 @@ const headerVariants: Variants = {
 };
 
 export default function BlogSection() {
-    const { fetchPosts, posts, isLoading } = usePostStore();
+    const {  posts, isLoading, setFilter } = usePostStore();
 
     useEffect(() => {
-        fetchPosts();
-    }, [fetchPosts]);
+        setFilter({ featured: true });
+    }, [setFilter]);
 
     const publishedPosts = useMemo(() => {
         return [...posts]
             .filter((p) => p.published)
             .sort((a, b) => {
-                // Featured first
-                if (a.featured && !b.featured) return -1;
-                if (!a.featured && b.featured) return 1;
-
-                // Then by date (newest first)
+                // By date (newest first)
                 const dateA = new Date(a.publishedAt ?? a.createdAt).getTime();
                 const dateB = new Date(b.publishedAt ?? b.createdAt).getTime();
                 return dateB - dateA;
