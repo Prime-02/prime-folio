@@ -33,21 +33,18 @@ const headerVariants: Variants = {
 };
 
 export default function ProjectsSection() {
-    const { fetchProjects, projects, isLoading } = useProjectStore();
+    const { fetchProjects, projects, isLoading, setFilter } = useProjectStore();
 
     useEffect(() => {
-        fetchProjects();
-    }, [fetchProjects]);
+        setFilter({ featured: true });
+    }, [fetchProjects, setFilter]);
+
 
     // Get published projects, sorted by featured first, then order, then date
     const publishedProjects = useMemo(() => {
         return [...projects]
             .filter((p) => p.published)
             .sort((a, b) => {
-                // Featured first
-                if (a.featured && !b.featured) return -1;
-                if (!a.featured && b.featured) return 1;
-
                 // Then by order
                 if (a.order !== b.order) return a.order - b.order;
 
