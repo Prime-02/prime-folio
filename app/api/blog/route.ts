@@ -52,7 +52,12 @@ export async function GET(req: NextRequest) {
     const [posts, totalCount] = await Promise.all([
       prisma.post.findMany({
         where,
-        orderBy: { publishedAt: "desc" },
+        // Featured items first (stacked from highest order to lowest),
+        // then non-featured items by publishedAt descending
+        orderBy: [
+          { featured: "desc" }, // true (featured) comes first
+          { publishedAt: "desc" }, // Most recently published first
+        ],
         skip,
         take: limit,
         select: {
