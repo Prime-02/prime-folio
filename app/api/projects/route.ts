@@ -55,7 +55,13 @@ export async function GET(req: NextRequest) {
     const [projects, totalCount] = await Promise.all([
       prisma.project.findMany({
         where,
-        orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+        // Featured items first (stacked from highest order to lowest),
+        // then non-featured items by order ascending, then by createdAt descending
+        orderBy: [
+          { featured: "desc" }, // true (featured) comes first
+          { order: "asc" }, // Higher order value = closer to top for featured items
+          { createdAt: "desc" }, // Newest first as tiebreaker
+        ],
         select: {
           id: true,
           title: true,
