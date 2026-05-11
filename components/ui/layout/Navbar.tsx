@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import MobileMenu from "./MobileMenu";
+import { useProfileStore } from "@/lib/stores";
 
 const navLinks = [
     { label: "Home", href: "#hero" },
@@ -111,7 +112,7 @@ export default function Navbar() {
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.2, duration: 0.5 }}
                             >
-                                CD<span style={{ color: "var(--primary-500)" }}>.</span>
+                                {`PR1M3-FOLIO`}<span style={{ color: "var(--primary-500)" }}>.</span>
                             </motion.span>
                         </Link>
 
