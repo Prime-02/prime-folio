@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import MobileMenu from "./MobileMenu";
-import { useProfileStore } from "@/lib/stores";
+import { useUIStore } from "@/lib/stores";
 
 const navLinks = [
     { label: "Home", href: "#hero" },
@@ -22,6 +22,7 @@ export default function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [activeSection, setActiveSection] = useState("hero");
+    const { theme, toggleTheme } = useUIStore();
 
     // Handle scroll effect
     useEffect(() => {
@@ -65,7 +66,7 @@ export default function Navbar() {
         const element = document.getElementById(targetId);
 
         if (element) {
-            const offset = 80; // Adjust for navbar height
+            const offset = 80;
             const elementPosition = element.getBoundingClientRect().top;
             const offsetPosition = elementPosition + window.pageYOffset - offset;
 
@@ -75,7 +76,6 @@ export default function Navbar() {
             });
         }
 
-        // Close mobile menu if open
         if (isMobileMenuOpen) {
             setIsMobileMenuOpen(false);
         }
@@ -84,7 +84,7 @@ export default function Navbar() {
     return (
         <>
             <motion.nav
-                className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+                className="fixed top-0 left-0 right-0 z-40 transition-all duration-300"
                 initial={{ y: -100 }}
                 animate={{ y: 0 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
@@ -104,7 +104,7 @@ export default function Navbar() {
                         <Link
                             href="#hero"
                             onClick={(e) => handleNavClick(e, "#hero")}
-                            className="text-lg font-Montserrat font-bold shrink-0"
+                            className={`text-lg font-Montserrat font-bold shrink-0 ${isMobileMenuOpen ? 'pointer-events-none lg:pointer-events-auto' : ''}`}
                             style={{ color: "var(--text-primary)" }}
                         >
                             <motion.span
@@ -128,8 +128,8 @@ export default function Navbar() {
                                         href={link.href}
                                         onClick={(e) => handleNavClick(e, link.href)}
                                         className={`relative px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${isActive
-                                            ? "text-[var(--primary-600)]"
-                                            : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                                                ? "text-[var(--primary-600)]"
+                                                : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                                             }`}
                                         initial={{ opacity: 0, y: -20 }}
                                         animate={{ opacity: 1, y: 0 }}
@@ -151,8 +151,33 @@ export default function Navbar() {
                             })}
                         </div>
 
-                        {/* Resume button & Mobile menu toggle */}
+                        {/* Action buttons */}
                         <div className="flex items-center gap-3">
+                            {/* Desktop Theme Toggle */}
+                            <motion.button
+                                onClick={toggleTheme}
+                                className="hidden sm:inline-flex items-center justify-center w-10 h-10 rounded-lg transition-colors"
+                                style={{
+                                    background: "var(--bg-secondary)",
+                                    border: "0.5px solid var(--border-light)",
+                                }}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.4, duration: 0.3 }}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                                type="button"
+                            >
+                                <motion.i
+                                    className={`ti ${theme === 'dark' ? 'ti-sun' : 'ti-moon'} text-lg`}
+                                    style={{ color: "var(--text-primary)" }}
+                                    animate={{ rotate: 360 }}
+                                    transition={{ duration: 0.5 }}
+                                    key={theme}
+                                />
+                            </motion.button>
+
                             {/* Resume Download */}
                             <motion.a
                                 href="/cv"
@@ -174,12 +199,13 @@ export default function Navbar() {
                             {/* Mobile menu button */}
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                                className="lg:hidden w-10 h-10 rounded-lg flex items-center justify-center transition-colors"
+                                className={`lg:hidden w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${isMobileMenuOpen ? 'relative z-50' : ''}`}
                                 style={{
                                     background: "var(--bg-secondary)",
                                     border: "0.5px solid var(--border-light)",
                                 }}
                                 aria-label="Toggle menu"
+                                type="button"
                             >
                                 <motion.div
                                     animate={isMobileMenuOpen ? "open" : "closed"}
@@ -227,6 +253,8 @@ export default function Navbar() {
                         activeSection={activeSection}
                         onNavClick={handleNavClick}
                         onClose={() => setIsMobileMenuOpen(false)}
+                        theme={theme}
+                        onToggleTheme={toggleTheme}
                     />
                 )}
             </AnimatePresence>

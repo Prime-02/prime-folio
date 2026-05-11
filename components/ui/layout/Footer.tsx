@@ -1,6 +1,6 @@
 "use client";
 
-import { useProfileStore } from "@/lib/stores";
+import { useProfileStore, useUIStore } from "@/lib/stores";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useMemo } from "react";
@@ -11,10 +11,6 @@ interface SocialLink {
     url: string;
     order?: number;
     createdAt?: Date;
-}
-
-interface FooterProps {
-    socialLinks?: SocialLink[];
 }
 
 const footerLinks = [
@@ -39,20 +35,19 @@ const footerLinks = [
     },
 ];
 
-export default function Footer( ) {
+export default function Footer() {
     const currentYear = new Date().getFullYear();
-        const {  profile } = useProfileStore();
-    
-
+    const { profile } = useProfileStore();
+    const { theme, toggleTheme } = useUIStore();
 
     const socialLinks = useMemo(() => {
-            if (!profile?.socialLinks) return [];
-            return [...profile.socialLinks].sort((a, b) => {
-                const orderDiff = (a.order ?? 0) - (b.order ?? 0);
-                if (orderDiff !== 0) return orderDiff;
-                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-            });
-        }, [profile?.socialLinks]);
+        if (!profile?.socialLinks) return [];
+        return [...profile.socialLinks].sort((a, b) => {
+            const orderDiff = (a.order ?? 0) - (b.order ?? 0);
+            if (orderDiff !== 0) return orderDiff;
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+    }, [profile?.socialLinks]);
 
     const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
         if (href.startsWith("#")) {
@@ -104,6 +99,49 @@ export default function Footer( ) {
                             Full-stack software engineer passionate about building
                             beautiful, performant web applications.
                         </p>
+
+                        {/* Theme Toggle */}
+                        <div className="mb-6">
+                            <button
+                                onClick={toggleTheme}
+                                className="inline-flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 group"
+                                style={{
+                                    background: "var(--bg-primary)",
+                                    border: "0.5px solid var(--border-light)",
+                                }}
+                                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                            >
+                                <motion.div
+                                    className="relative w-10 h-5 rounded-full flex items-center"
+                                    style={{ background: "var(--text-muted)" }}
+                                >
+                                    <motion.div
+                                        className="absolute w-4 h-4 rounded-full shadow-md"
+                                        style={{
+                                            background: theme === 'dark' ? "var(--primary-500)" : "#fbbf24",
+                                            left: theme === 'dark' ? 'calc(100% - 1.125rem)' : '0.125rem',
+                                        }}
+                                        layout
+                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                    />
+                                </motion.div>
+                                <div className="flex items-center gap-2">
+                                    <motion.i
+                                        className={`ti ${theme === 'dark' ? 'ti-moon' : 'ti-sun'} text-sm`}
+                                        style={{ color: "var(--text-primary)" }}
+                                        animate={{ rotate: theme === 'dark' ? 0 : 360 }}
+                                        transition={{ duration: 0.5 }}
+                                    />
+                                    <span
+                                        className="text-sm"
+                                        style={{ color: "var(--text-muted)" }}
+                                    >
+                                        {theme === 'dark' ? 'Dark' : 'Light'}
+                                    </span>
+                                </div>
+                            </button>
+                        </div>
+
                         {/* Back to top */}
                         <button
                             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}

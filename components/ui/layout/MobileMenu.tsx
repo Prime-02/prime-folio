@@ -16,6 +16,8 @@ interface MobileMenuProps {
     activeSection: string;
     onNavClick: (e: React.MouseEvent<HTMLAnchorElement>, href: string) => void;
     onClose: () => void;
+    theme: "light" | "dark";
+    onToggleTheme: () => void;
 }
 
 const menuVariants: Variants = {
@@ -52,7 +54,7 @@ const itemVariants: Variants = {
     },
 };
 
-export default function MobileMenu({ links, activeSection, onNavClick, onClose }: MobileMenuProps) {
+export default function MobileMenu({ links, activeSection, onNavClick, onClose, theme, onToggleTheme }: MobileMenuProps) {
     const { profile } = useProfileStore();
 
     const socialLinks = useMemo(() => {
@@ -75,7 +77,7 @@ export default function MobileMenu({ links, activeSection, onNavClick, onClose }
 
     return (
         <motion.div
-            className="fixed inset-0 z-40 lg:hidden"
+            className="fixed inset-0 z-50 lg:hidden"
             initial="closed"
             animate="open"
             exit="closed"
@@ -93,7 +95,7 @@ export default function MobileMenu({ links, activeSection, onNavClick, onClose }
 
             {/* Menu panel */}
             <motion.div
-                className="absolute right-0 top-0 bottom-0 w-80 max-w-[85vw] p-6 overflow-y-auto"
+                className="absolute right-0 top-0 bottom-0 w-80 max-w-[85vw] p-6 overflow-y-auto shadow-2xl"
                 style={{
                     background: "var(--bg-primary)",
                     borderLeft: "0.5px solid var(--border-light)",
@@ -102,17 +104,58 @@ export default function MobileMenu({ links, activeSection, onNavClick, onClose }
                 animate={{ x: 0 }}
                 exit={{ x: "100%" }}
                 transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                onClick={(e) => e.stopPropagation()}
             >
-                {/* Close button */}
-                <div className="flex justify-end mb-8">
+                {/* Header with theme toggle, CV button, and close button */}
+                <div className="flex items-center gap-2 mb-8">
+                    {/* Mobile Theme Toggle */}
                     <button
-                        onClick={onClose}
-                        className="w-10 h-10 rounded-lg flex items-center justify-center"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleTheme();
+                        }}
+                        className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
                         style={{
                             background: "var(--bg-secondary)",
                             border: "0.5px solid var(--border-light)",
+                            cursor: "pointer",
+                        }}
+                        aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                        type="button"
+                    >
+                        <i
+                            className={`ti ${theme === 'dark' ? 'ti-sun' : 'ti-moon'} text-lg`}
+                            style={{ color: "var(--text-primary)" }}
+                        />
+                    </button>
+
+                    {/* Generate CV Button */}
+                    <motion.a
+                        href="/cv"
+                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200"
+                        style={{
+                            background: "var(--primary-500)",
+                            color: "white",
+                        }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={onClose}
+                    >
+                        <i className="ti ti-download text-sm" aria-hidden="true" />
+                        Generate CV
+                    </motion.a>
+
+                    {/* Close button */}
+                    <button
+                        onClick={onClose}
+                        className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
+                        style={{
+                            background: "var(--bg-secondary)",
+                            border: "0.5px solid var(--border-light)",
+                            cursor: "pointer",
                         }}
                         aria-label="Close menu"
+                        type="button"
                     >
                         <i
                             className="ti ti-x text-lg"
@@ -134,8 +177,8 @@ export default function MobileMenu({ links, activeSection, onNavClick, onClose }
                                 href={link.href}
                                 onClick={(e) => onNavClick(e, link.href)}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${isActive
-                                    ? "text-[var(--primary-600)]"
-                                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                                        ? "text-[var(--primary-600)]"
+                                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                                     }`}
                                 style={{
                                     background: isActive
@@ -184,7 +227,7 @@ export default function MobileMenu({ links, activeSection, onNavClick, onClose }
                     </motion.div>
                 )}
 
-                {/* Social links or contact info */}
+                {/* Social links */}
                 <motion.div
                     className="mt-8 px-4"
                     variants={itemVariants}
