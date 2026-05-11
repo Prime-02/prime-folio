@@ -33,11 +33,11 @@ const headerVariants: Variants = {
 };
 
 export default function ProjectsSection() {
-    const { fetchProjects, projects, isLoading, setFilter } = useProjectStore();
+    const {  projects, isLoading, setFilter } = useProjectStore();
 
     useEffect(() => {
         setFilter({ featured: true });
-    }, [fetchProjects, setFilter]);
+    }, [setFilter]);
 
 
     // Get published projects, sorted by featured first, then order, then date

@@ -3,7 +3,8 @@
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import type { Variants } from "framer-motion";
-
+import { useProfileStore } from "@/lib/stores";
+import { useMemo } from "react";
 
 interface NavLink {
     label: string;
@@ -52,6 +53,17 @@ const itemVariants: Variants = {
 };
 
 export default function MobileMenu({ links, activeSection, onNavClick, onClose }: MobileMenuProps) {
+    const { profile } = useProfileStore();
+
+    const socialLinks = useMemo(() => {
+        if (!profile?.socialLinks) return [];
+        return [...profile.socialLinks].sort((a, b) => {
+            const orderDiff = (a.order ?? 0) - (b.order ?? 0);
+            if (orderDiff !== 0) return orderDiff;
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+    }, [profile?.socialLinks]);
+
     // Close on escape key
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -122,8 +134,8 @@ export default function MobileMenu({ links, activeSection, onNavClick, onClose }
                                 href={link.href}
                                 onClick={(e) => onNavClick(e, link.href)}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${isActive
-                                        ? "text-[var(--primary-600)]"
-                                        : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
+                                    ? "text-[var(--primary-600)]"
+                                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                                     }`}
                                 style={{
                                     background: isActive
@@ -149,28 +161,30 @@ export default function MobileMenu({ links, activeSection, onNavClick, onClose }
                     })}
                 </nav>
 
-                {/* Resume button */}
-                <motion.div
-                    className="mt-8 px-4"
-                    variants={itemVariants}
-                >
-                    <a
-                        href="/resume.pdf"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
-                        style={{
-                            background: "var(--primary-500)",
-                            color: "white",
-                        }}
-                        onClick={onClose}
+                {/* Resume button - only show if resume URL exists */}
+                {profile?.resumeUrl && (
+                    <motion.div
+                        className="mt-8 px-4"
+                        variants={itemVariants}
                     >
-                        <i className="ti ti-download text-sm" aria-hidden="true" />
-                        Download Resume
-                    </a>
-                </motion.div>
+                        <a
+                            href={profile.resumeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200"
+                            style={{
+                                background: "var(--primary-500)",
+                                color: "white",
+                            }}
+                            onClick={onClose}
+                        >
+                            <i className="ti ti-download text-sm" aria-hidden="true" />
+                            Download Resume
+                        </a>
+                    </motion.div>
+                )}
 
-                {/* Social links or additional info */}
+                {/* Social links or contact info */}
                 <motion.div
                     className="mt-8 px-4"
                     variants={itemVariants}
@@ -179,17 +193,34 @@ export default function MobileMenu({ links, activeSection, onNavClick, onClose }
                         className="text-xs mb-3"
                         style={{ color: "var(--text-muted)" }}
                     >
-                        GET IN TOUCH
+                        CONNECT
                     </p>
-                    <a
-                        href="mailto:hello@example.com"
-                        className="flex items-center gap-3 text-sm hover:underline"
-                        style={{ color: "var(--text-secondary)" }}
-                        onClick={onClose}
-                    >
-                        <i className="ti ti-mail" aria-hidden="true" />
-                        hello@example.com
-                    </a>
+                    {socialLinks.length > 0 ? (
+                        <ul className="space-y-2">
+                            {socialLinks.map((link, index) => (
+                                <li key={link.id ?? `mobile-social-${index}`}>
+                                    <a
+                                        href={link.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-3 text-sm hover:underline capitalize"
+                                        style={{ color: "var(--text-secondary)" }}
+                                        onClick={onClose}
+                                    >
+                                        <i className={`ti ti-brand-${link.platform.toLowerCase()}`} aria-hidden="true" />
+                                        {link.platform}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p
+                            className="text-sm"
+                            style={{ color: "var(--text-muted)" }}
+                        >
+                            No contact info added yet.
+                        </p>
+                    )}
                 </motion.div>
             </motion.div>
         </motion.div>

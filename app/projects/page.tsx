@@ -27,7 +27,6 @@ const containerVariants: Variants = {
 
 export default function ProjectsPage() {
     const {
-        fetchProjects,
         projects,
         isLoading,
         pagination,
@@ -42,8 +41,8 @@ export default function ProjectsPage() {
     const [showFeatured, setShowFeatured] = useState<boolean>(false);
 
     useEffect(() => {
-        fetchProjects();
-    }, [fetchProjects]);
+        setFilter({ featured: undefined });
+    }, [setFilter]);
 
     // Get all unique tags - safely handle if projects is not an array
     const allTags = useMemo(() => {
