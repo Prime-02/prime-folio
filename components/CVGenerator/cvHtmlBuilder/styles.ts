@@ -34,7 +34,7 @@ export function generateBaseStyles(tone: string): string {
     .cv-meta span { display: flex; align-items: center; gap: 4px; }
     .avail-badge { 
       display: inline-block; 
-      background: #dcfce7; 
+      // background: #dcfce7; 
       color: #166534; 
       font-size: 11px; 
       font-weight: 600; 
